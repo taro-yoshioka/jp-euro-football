@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>欧州日本人クラブ速報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Barlow+Condensed:wght@500;700&display=swap">
+<style>
+/* Layout: sticky league tabs → grid of club cards (rank plate + record + Japanese players + last results w/ highlight links), each with an expandable full table */
+:root{
+  --bg:#eef1ef; --surface:#ffffff; --ink:#14201b; --muted:#5c6b64; --line:#d5ddd8;
+  --pitch:#1f6b4a; --pitch-soft:#e1efe7; --red:#c8102e; --yt:#e3e8e5; --yt-ink:#3f4a45; --goal:#a87900; --yamabuki:#e0a000;
+  --win:#1f8a55; --draw:#8a8f8c; --loss:#c23b3b;
+  --display:"Barlow Condensed","Zen Kaku Gothic New",system-ui,sans-serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1512; --surface:#16211c; --ink:#e6eeea; --muted:#93a39b; --line:#2a3832;
+  --pitch:#4fbf8a; --pitch-soft:#1b3328; --red:#ff5a6e; --yt:#2a3832; --yt-ink:#c9d4cf; --goal:#ffd23f; --yamabuki:#f8b500; --win:#3fc07f; --draw:#8d9692; --loss:#ef6767; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1512; --surface:#16211c; --ink:#e6eeea; --muted:#93a39b; --line:#2a3832;
+  --pitch:#4fbf8a; --pitch-soft:#1b3328; --red:#ff5a6e; --yt:#2a3832; --yt-ink:#c9d4cf; --goal:#ffd23f; --yamabuki:#f8b500; --win:#3fc07f; --draw:#8d9692; --loss:#ef6767; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 var(--body)}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:3px solid var(--ink)}
+h1{margin:0;font:900 clamp(22px,4vw,34px)/1.1 var(--body);letter-spacing:.01em;text-wrap:balance}
+h1 .dot{display:inline-block;width:.55em;height:.55em;border-radius:50%;background:var(--red);margin-right:.3em;vertical-align:.08em}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.actions{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:6px}
+.btn:hover{border-color:var(--pitch)}
+:focus-visible{outline:2px solid var(--pitch);outline-offset:2px}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding-block:12px;margin-bottom:6px}
+nav.tabs button{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 14px;border-radius:999px;font-weight:700;font-size:13px;white-space:nowrap}
+nav.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+nav.tabs .n{font-family:var(--display);font-weight:500;opacity:.7;margin-left:4px}
+.status{color:var(--muted);padding:24px 0}
+.status .bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:8px;max-width:360px}
+.status .bar i{display:block;height:100%;background:var(--pitch);width:0;transition:width .2s}
+section.league{margin-top:18px}
+section.league>h2{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;font:700 18px var(--body)}
+section.league>h2 small{font:500 13px var(--display);color:var(--muted);letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.head{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 14px 10px}
+.head img{width:40px;height:40px;object-fit:contain}
+.team{min-width:0}
+.team b{display:block;font-size:16px;line-height:1.25}
+.team span{font-size:12px;color:var(--muted)}
+.rank{text-align:center;min-width:62px;border-radius:8px;background:var(--pitch-soft);padding:4px 8px}
+.rank .r{font:700 30px/1 var(--display);color:var(--pitch)}
+.rank .r.top{color:var(--yamabuki)}
+.rank .r sup{font-size:13px}
+.rank .l{font-size:10px;color:var(--muted);letter-spacing:.06em}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);border-block:1px solid var(--line);font-variant-numeric:tabular-nums}
+.stats div{text-align:center;padding:6px 0}
+.stats div+div{border-left:1px solid var(--line)}
+.stats b{display:block;font:700 19px/1.1 var(--display)}
+.stats span{font-size:10px;color:var(--muted);letter-spacing:.06em}
+.zone{font-size:11px;padding:4px 14px;color:var(--muted)}
+.zone i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:0}
+.players{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:2px 10px 2px 3px;font-size:12px;text-decoration:none;font-weight:700}
+.chip:hover{border-color:var(--red)}
+.chip .no{font:700 11px/1 var(--display);background:var(--draw);color:#fff;border-radius:999px;min-width:22px;height:22px;display:grid;place-items:center;padding:0 4px}
+.chip .pos{font-weight:400;color:var(--muted);font-size:11px}
+.form{display:flex;gap:4px;padding:0 14px 6px;align-items:center;font-size:11px;color:var(--muted)}
+.form i{font:700 11px/18px var(--display);font-style:normal;width:18px;text-align:center;border-radius:3px;color:#fff}
+.W{background:var(--win)}.D{background:var(--draw)}.L{background:var(--loss)}
+ul.matches{list-style:none;margin:0;padding:4px 0 6px}
+ul.matches li{display:grid;grid-template-columns:42px 18px 1fr auto;gap:8px;align-items:center;padding:6px 14px;font-size:13px}
+ul.matches li+li{border-top:1px dashed var(--line)}
+.date{font:500 13px var(--display);color:var(--muted);font-variant-numeric:tabular-nums}
+.res{font:700 11px/18px var(--display);text-align:center;border-radius:3px;color:#fff}
+.vs{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vs .sc{font:700 15px var(--display);margin:0 6px;font-variant-numeric:tabular-nums}
+.vs .me{font-weight:700}
+li.jpgoal .vs,li.jpgoal .date{color:var(--goal);font-weight:700}
+.chip .no.scored{background:var(--win)}
+.yt{display:inline-flex;align-items:center;gap:5px;text-decoration:none;background:var(--yt);color:var(--yt-ink);font-size:12px;font-weight:700;padding:3px 10px;border-radius:5px;white-space:nowrap}
+.yt:hover{color:var(--ink);background:var(--line)}
+.yt svg{width:10px;height:10px;fill:currentColor}
+.next{font-size:12px;color:var(--muted);padding:6px 14px 10px;border-top:1px solid var(--line)}
+.next b{color:var(--ink)}
+details.table{border-top:1px solid var(--line);margin-top:auto}
+details.table summary{cursor:pointer;padding:8px 14px;font-size:12px;font-weight:700;color:var(--pitch)}
+.tblwrap{overflow-x:auto;padding:0 8px 10px}
+table{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}
+th,td{padding:3px 6px;text-align:right;white-space:nowrap}
+th{color:var(--muted);font-weight:400;font-size:11px}
+td.t{text-align:left;display:flex;align-items:center;gap:6px}
+td.t img{width:16px;height:16px}
+td.zn{padding:0;width:3px}
+tr.jp td{background:var(--pitch-soft);font-weight:700}
+tr.me td{outline:none;color:var(--red)}
+.empty{color:var(--muted);padding:6px 14px 12px;font-size:12px}
+footer{margin-top:32px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1><span class="dot"></span>欧州日本人クラブ速報</h1>
+      <div class="sub">プレミア・ラ・リーガ・リーグアン・ブンデス・ベルギー1部｜日本人選手が在籍するクラブの順位と直近結果</div>
+    </div>
+    <div class="actions"><span id="updated"></span><button class="btn" id="reload" type="button">最新に更新</button></div>
+  </header>
+  <nav class="tabs" id="tabs" aria-label="リーグ切り替え"></nav>
+  <div id="status" class="status">データを読み込み中…<div class="bar"><i id="prog"></i></div></div>
+  <main id="main"></main>
+  <footer>データ：ESPN 公開API（ロースターの国籍情報から日本人選手を自動検出）。ハイライトボタンはYouTubeで該当試合のハイライトを検索します。取得結果は6時間ブラウザに保存されます。</footer>
+</div>
+<script>
+const LEAGUES=[
+  {id:'eng.1',ja:'プレミアリーグ',en:'Premier League',yt:'Premier League'},
+  {id:'esp.1',ja:'ラ・リーガ',en:'LaLiga',yt:'LaLiga'},
+  {id:'fra.1',ja:'リーグ・アン',en:'Ligue 1',yt:'Ligue 1'},
+  {id:'ger.1',ja:'ブンデスリーガ',en:'Bundesliga',yt:'Bundesliga'},
+  {id:'bel.1',ja:'ベルギー1部',en:'Pro League',yt:'Jupiler Pro League'},
+];
+// ESPNの国籍データの明らかな誤りを除外
+const EXCLUDE=new Set(['Malick Fofana']);
+const API='https://site.api.espn.com/apis';
+const CACHE_KEY='jp-euro-v2', TTL=6*3600e3;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const getJSON=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
+const stat=(e,n)=>(e.stats.find(s=>s.name===n)||{}).displayValue??'-';
+const fmtDate=d=>{const x=new Date(d);return `${x.getMonth()+1}/${x.getDate()}`};
+const fmtFull=d=>{const x=new Date(d);return `${x.getMonth()+1}/${x.getDate()}(${'日月火水木金土'[x.getDay()]}) ${String(x.getHours()).padStart(2,'0')}:${String(x.getMinutes()).padStart(2,'0')}`};
+const ytURL=q=>'https://www.youtube.com/results?search_query='+encodeURIComponent(q);
+
+async function pool(items,n,fn,onDone){const out=new Array(items.length);let i=0;
+  await Promise.all(Array.from({length:n},async()=>{while(i<items.length){const k=i++;try{out[k]=await fn(items[k])}catch(e){out[k]=null}onDone&&onDone()}}));return out}
+
+async function load(force){
+  if(!force){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY));if(c&&Date.now()-c.t<TTL)return c}catch(e){}}
+  const prog=$('#prog');
+  const tables=await Promise.all(LEAGUES.map(l=>getJSON(`${API}/v2/sports/soccer/${l.id}/standings`).then(d=>d.children[0].standings.entries)));
+  const jobs=[];tables.forEach((ents,li)=>ents.forEach(e=>jobs.push({li,team:e.team})));
+  let done=0;const total=jobs.length;
+  const rosters=await pool(jobs,12,j=>getJSON(`${API}/site/v2/sports/soccer/${LEAGUES[j.li].id}/teams/${j.team.id}/roster`),()=>{prog.style.width=(++done/total*80)+'%'});
+  const clubs=[];
+  jobs.forEach((j,k)=>{const r=rosters[k];if(!r)return;
+    const jp=(r.athletes||[]).filter(a=>a.citizenship==='Japan'&&!EXCLUDE.has(a.displayName))
+      .map(a=>({id:a.id,name:a.displayName,no:a.jersey||'',pos:(a.position||{}).abbreviation||''}));
+    if(jp.length)clubs.push({li:j.li,id:j.team.id,players:jp});});
+  done=0;
+  await pool(clubs,8,async c=>{
+    const lg=LEAGUES[c.li].id;
+    const [res,fix]=await Promise.all([
+      getJSON(`${API}/site/v2/sports/soccer/${lg}/teams/${c.id}/schedule`).catch(()=>({events:[]})),
+      getJSON(`${API}/site/v2/sports/soccer/${lg}/teams/${c.id}/schedule?fixture=true`).catch(()=>({events:[]}))]);
+    const slim=e=>{const cp=e.competitions[0];return{id:e.id,date:e.date,done:cp.status.type.completed,
+      t:cp.competitors.map(x=>({id:x.team.id,name:x.team.displayName,ha:x.homeAway,score:x.score?(x.score.displayValue??x.score):null,win:x.winner}))}};
+    c.results=(res.events||[]).map(slim).filter(m=>m.done).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+    c.next=(fix.events||[]).map(slim).filter(m=>!m.done&&new Date(m.date)>Date.now()).sort((a,b)=>new Date(a.date)-new Date(b.date))[0]||null;
+  },()=>{prog.style.width=(80+(++done/clubs.length*15))+'%'});
+  // 得点者：試合日ごとのスコアボード（ET日付）からゴール詳細を取得
+  const etDay=d=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d)).replace(/-/g,'');
+  const days=[...new Set(clubs.flatMap(c=>(c.results||[]).map(m=>LEAGUES[c.li].id+'|'+etDay(m.date))))];
+  const scorers={};
+  await pool(days,8,async k=>{const [lg,d]=k.split('|');
+    const sb=await getJSON(`${API}/site/v2/sports/soccer/${lg}/scoreboard?dates=${d}`);
+    (sb.events||[]).forEach(e=>{scorers[e.id]=(e.competitions[0].details||[]).filter(x=>x.scoringPlay&&!x.ownGoal).map(x=>((x.athletesInvolved||[])[0]||{}).id).filter(Boolean)});
+  });
+  clubs.forEach(c=>{
+    (c.results||[]).forEach(m=>{const ids=scorers[m.id]||[];m.jpGoals=c.players.filter(p=>ids.includes(p.id)).map(p=>p.name+(ids.filter(i=>i===p.id).length>1?'×'+ids.filter(i=>i===p.id).length:''))});
+    const last=(c.results||[])[0];c.players.forEach(p=>{p.scoredLast=!!(last&&(scorers[last.id]||[]).includes(p.id))});
+  });
+  const slimTables=tables.map(ents=>ents.map(e=>({id:e.team.id,name:e.team.displayName,short:e.team.shortDisplayName,logo:(e.team.logos||[{}])[0].href,
+    rank:+stat(e,'rank'),gp:stat(e,'gamesPlayed'),w:stat(e,'wins'),d:stat(e,'ties'),l:stat(e,'losses'),gf:stat(e,'pointsFor'),ga:stat(e,'pointsAgainst'),gd:stat(e,'pointDifferential'),pts:stat(e,'points'),
+    note:e.note?{color:e.note.color,desc:e.note.description}:null})).sort((a,b)=>a.rank-b.rank));
+  const data={t:Date.now(),tables:slimTables,clubs};
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify(data))}catch(e){}
+  return data;
+}
+
+let DATA,TAB='all';
+try{TAB=localStorage.getItem('jp-euro-tab')||'all'}catch(e){}
+
+function renderTabs(){
+  const cnt=li=>DATA.clubs.filter(c=>c.li===li).length;
+  const btn=(key,label,n)=>`<button type="button" data-k="${key}" aria-pressed="${TAB===key}">${label}<span class="n">${n}</span></button>`;
+  $('#tabs').innerHTML=btn('all','すべて',DATA.clubs.length)+LEAGUES.map((l,i)=>btn(l.id,l.ja,cnt(i))).join('');
+}
+function matchRow(m,teamId,lg){
+  const me=m.t.find(x=>x.id===teamId)||m.t[0], op=m.t.find(x=>x!==me);
+  const r=me.win?'W':op.win?'L':'D';
+  const home=m.t.find(x=>x.ha==='home'),away=m.t.find(x=>x.ha==='away');
+  const nm=x=>x.id===teamId?`<span class="me">${esc(x.name)}</span>`:esc(x.name);
+  const q=`${home.name} vs ${away.name} highlights ${LEAGUES[lg].yt}`;
+  const g=m.jpGoals||[];
+  return `<li${g.length?` class="jpgoal" title="日本人得点：${esc(g.join('、'))}"`:''}><span class="date">${fmtDate(m.date)}</span><span class="res ${r}">${r==='W'?'勝':r==='L'?'敗':'分'}</span>
+    <span class="vs" title="${esc(home.name)} ${esc(home.score)}-${esc(away.score)} ${esc(away.name)}">${nm(home)}<span class="sc">${esc(home.score)}-${esc(away.score)}</span>${nm(away)}</span>
+    <a class="yt" href="${ytURL(q)}" target="_blank" rel="noopener"><svg viewBox="0 0 10 10"><path d="M2 1l7 4-7 4z"/></svg>ハイライト</a></li>`;
+}
+function card(c){
+  const tbl=DATA.tables[c.li], row=tbl.find(t=>t.id===c.id); if(!row)return '';
+  const lg=LEAGUES[c.li];
+  const jpIds=new Set(DATA.clubs.filter(x=>x.li===c.li).map(x=>x.id));
+  const form=[...c.results].reverse().map(m=>{const me=m.t.find(x=>x.id===c.id),op=m.t.find(x=>x!==me);return me&&op?(me.win?'W':op.win?'L':'D'):''}).filter(Boolean);
+  const nx=c.next?(()=>{const op=c.next.t.find(x=>x.id!==c.id);const me=c.next.t.find(x=>x.id===c.id);return `次節 <b>${fmtFull(c.next.date)}</b>　${me&&me.ha==='home'?'vs':'@'} ${esc(op?op.name:'')}`})():'';
+  return `<article class="card">
+    <div class="head"><img src="${esc(row.logo)}" alt="" loading="lazy"><div class="team"><b>${esc(row.name)}</b><span>${lg.ja}</span></div>
+      <div class="rank"><div class="r${row.rank<=3?' top':''}">${row.rank}<sup>位</sup></div><div class="l">${tbl.length}チーム中</div></div></div>
+    <div class="stats"><div><b>${row.pts}</b><span>勝点</span></div><div><b>${row.gp}</b><span>試合</span></div><div><b>${row.w}-${row.d}-${row.l}</b><span>勝-分-敗</span></div><div><b>${row.gf}:${row.ga}</b><span>得:失</span></div><div><b>${row.gd}</b><span>得失差</span></div></div>
+    ${row.note?`<div class="zone"><i style="background:${esc(row.note.color)}"></i>${esc(row.note.desc)}</div>`:''}
+    <div class="players">${c.players.map(p=>`<a class="chip" href="${ytURL(p.name+' '+row.name)}" target="_blank" rel="noopener" title="YouTubeで${esc(p.name)}を検索"><span class="no${p.scoredLast?' scored':''}" title="${p.scoredLast?'直近の試合で得点':'直近の試合で得点なし'}">${esc(p.no)||'–'}</span>${esc(p.name)}<span class="pos">${esc(p.pos)}</span></a>`).join('')}</div>
+    ${form.length?`<div class="form">直近：${form.map(f=>`<i class="${f}">${f==='W'?'勝':f==='L'?'敗':'分'}</i>`).join('')}</div>`:''}
+    ${c.results.length?`<ul class="matches">${c.results.map(m=>matchRow(m,c.id,c.li)).join('')}</ul>`:'<div class="empty">今季の試合結果はまだありません</div>'}
+    ${nx?`<div class="next">${nx}</div>`:''}
+    <details class="table"><summary>${lg.ja} 順位表を見る</summary><div class="tblwrap"><table>
+      <thead><tr><th></th><th>#</th><th style="text-align:left">チーム</th><th>試</th><th>勝</th><th>分</th><th>敗</th><th>得失</th><th>勝点</th></tr></thead><tbody>
+      ${tbl.map(t=>`<tr class="${jpIds.has(t.id)?'jp':''} ${t.id===c.id?'me':''}"><td class="zn" style="background:${t.note?esc(t.note.color):'transparent'}"></td><td>${t.rank}</td><td class="t"><img src="${esc(t.logo)}" alt="" loading="lazy">${esc(t.short||t.name)}</td><td>${t.gp}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gd}</td><td><b>${t.pts}</b></td></tr>`).join('')}
+      </tbody></table></div></details>
+  </article>`;
+}
+function render(){
+  renderTabs();
+  const lis=TAB==='all'?LEAGUES.map((_,i)=>i):[LEAGUES.findIndex(l=>l.id===TAB)];
+  $('#main').innerHTML=lis.map(li=>{
+    const cs=DATA.clubs.filter(c=>c.li===li).map(c=>({c,r:(DATA.tables[li].find(t=>t.id===c.id)||{}).rank||99})).sort((a,b)=>a.r-b.r);
+    return `<section class="league"><h2>${LEAGUES[li].ja}<small>${LEAGUES[li].en} · ${cs.length}クラブ / ${cs.reduce((s,x)=>s+x.c.players.length,0)}人</small></h2>
+      <div class="grid">${cs.map(x=>card(x.c)).join('')||'<div class="empty">該当クラブなし</div>'}</div></section>`}).join('');
+  const d=new Date(DATA.t);$('#updated').textContent=`取得 ${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;TAB=b.dataset.k;try{localStorage.setItem('jp-euro-tab',TAB)}catch(_){}render()});
+async function start(force){
+  $('#status').hidden=false;$('#prog').style.width='0';$('#reload').disabled=true;
+  try{DATA=await load(force);$('#status').hidden=true;render()}
+  catch(e){$('#status').innerHTML='データを取得できませんでした。ネット接続を確認して「最新に更新」を押してください。（'+esc(e.message)+'）'}
+  $('#reload').disabled=false;
+}
+$('#reload').addEventListener('click',()=>start(true));
+start(false);
+</script>
+</body>
+</html>
