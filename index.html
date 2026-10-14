@@ -109,7 +109,7 @@ footer{margin-top:32px;color:var(--muted);font-size:12px;border-top:1px solid va
   <header class="top">
     <div>
       <h1><span class="dot"></span>欧州日本人クラブ速報</h1>
-      <div class="sub">プレミア・ラ・リーガ・リーグアン・ブンデス・ベルギー1部｜日本人選手が在籍するクラブの順位と直近結果</div>
+      <div class="sub">プレミア・ラ・リーガ・セリエA・リーグアン・ブンデス・エールディビジ・ベルギー1部｜日本人選手が在籍するクラブの順位と直近結果</div>
     </div>
     <div class="actions"><span id="updated"></span><button class="btn" id="reload" type="button">最新に更新</button></div>
   </header>
@@ -122,14 +122,16 @@ footer{margin-top:32px;color:var(--muted);font-size:12px;border-top:1px solid va
 const LEAGUES=[
   {id:'eng.1',ja:'プレミアリーグ',en:'Premier League',yt:'Premier League'},
   {id:'esp.1',ja:'ラ・リーガ',en:'LaLiga',yt:'LaLiga'},
+  {id:'ita.1',ja:'セリエA',en:'Serie A',yt:'Serie A'},
   {id:'fra.1',ja:'リーグ・アン',en:'Ligue 1',yt:'Ligue 1'},
   {id:'ger.1',ja:'ブンデスリーガ',en:'Bundesliga',yt:'Bundesliga'},
+  {id:'ned.1',ja:'エールディビジ',en:'Eredivisie',yt:'Eredivisie'},
   {id:'bel.1',ja:'ベルギー1部',en:'Pro League',yt:'Jupiler Pro League'},
 ];
 // ESPNの国籍データの明らかな誤りを除外
 const EXCLUDE=new Set(['Malick Fofana']);
 const API='https://site.api.espn.com/apis';
-const CACHE_KEY='jp-euro-v2', TTL=6*3600e3;
+const CACHE_KEY='jp-euro-v3', TTL=6*3600e3;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const getJSON=u=>fetch(u).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()});
